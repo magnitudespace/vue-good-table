@@ -974,6 +974,8 @@ export default {
       nestedRows.forEach((headerRow) => {
         headerRow.children.forEach((row) => {
           row.originalIndex = index++;
+          row.vgtSelected = false;
+          row.vgtIsExpanded = false;
         });
       });
 
@@ -1166,7 +1168,7 @@ export default {
     },
     // checkbox click should always do the following
     onCheckboxClicked(row, index, event) {
-      this.$set(row, 'vgtSelected', !row.vgtSelected);
+      row.vgtSelected = !row.vgtSelected;
       this.$emit('on-row-click', {
         row,
         pageIndex: index,
@@ -1184,7 +1186,7 @@ export default {
     },
     onRowClicked(row, index, event) {
       if (this.selectable && !this.selectOnCheckboxOnly) {
-        this.$set(row, 'vgtSelected', !row.vgtSelected);
+        row.vgtSelected = !row.vgtSelected;
       }
       this.$emit('on-row-click', {
         row,
