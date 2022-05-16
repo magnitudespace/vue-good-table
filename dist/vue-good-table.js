@@ -9033,6 +9033,8 @@
         nestedRows.forEach(function (headerRow) {
           headerRow.children.forEach(function (row) {
             row.originalIndex = index++;
+            row.vgtSelected = false;
+            row.vgtIsExpanded = false;
           });
         });
         return nestedRows;
@@ -9233,7 +9235,7 @@
       },
       // checkbox click should always do the following
       onCheckboxClicked: function onCheckboxClicked(row, index, event) {
-        this.$set(row, 'vgtSelected', !row.vgtSelected);
+        row.vgtSelected = !row.vgtSelected;
         this.$emit('on-row-click', {
           row: row,
           pageIndex: index,
@@ -9251,7 +9253,7 @@
       },
       onRowClicked: function onRowClicked(row, index, event) {
         if (this.selectable && !this.selectOnCheckboxOnly) {
-          this.$set(row, 'vgtSelected', !row.vgtSelected);
+          row.vgtSelected = !row.vgtSelected;
         }
 
         this.$emit('on-row-click', {
