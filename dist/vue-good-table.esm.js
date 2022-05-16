@@ -1,5 +1,5 @@
 /**
- * vue-good-table v2.21.11-hiber.1
+ * vue-good-table v2.21.11-hiber.3
  * (c) 2018-present xaksis <shay@crayonbits.com>
  * https://github.com/xaksis/vue-good-table
  * Released under the MIT License.
@@ -19,21 +19,6 @@ function _typeof(obj) {
   }
 
   return _typeof(obj);
-}
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
 }
 
 function _slicedToArray(arr, i) {
@@ -2090,6 +2075,7 @@ var defaultType = {
 //
 var script = {
   name: 'VgtPaginationPageInfo',
+  emits: ['page-changed'],
   props: {
     currentPage: {
       "default": 1
@@ -2129,11 +2115,6 @@ var script = {
       return (this.currentPage - 1) * this.currentPerPage + 1;
     },
     lastRecordOnPage: function lastRecordOnPage() {
-      // if the setting is set to 'all'
-      if (this.currentPerPage === -1) {
-        return this.totalRecords;
-      }
-
       return Math.min(this.totalRecords, this.currentPage * this.currentPerPage);
     },
     recordInfo: function recordInfo() {
@@ -2159,7 +2140,7 @@ var script = {
         lastRecordOnPage: last,
         totalRecords: this.totalRecords,
         currentPage: this.currentPage,
-        totalPage: this.lastPage
+        totalPages: this.lastPage
       };
     }
   },
@@ -2301,7 +2282,7 @@ var __vue_render__ = function __vue_render__() {
         }
 
         $event.stopPropagation();
-        return _vm.changePage($event);
+        return _vm.changePage.apply(null, arguments);
       }
     }
   }), _vm._v(" "), _c('span', [_vm._v(_vm._s(_vm.pageInfo))])]), _vm._v(" "), _c('span', {
@@ -2320,7 +2301,7 @@ var __vue_staticRenderFns__ = [];
 var __vue_inject_styles__ = undefined;
 /* scoped */
 
-var __vue_scope_id__ = "data-v-347cbcfa";
+var __vue_scope_id__ = "data-v-f3abd086";
 /* module identifier */
 
 var __vue_module_identifier__ = undefined;
@@ -2341,6 +2322,7 @@ var __vue_component__ = /*#__PURE__*/normalizeComponent({
 //
 var script$1 = {
   name: 'VgtPagination',
+  emits: ['page-changed', 'per-page-changed'],
   props: {
     styleClass: {
       "default": 'table table-bordered'
@@ -2366,16 +2348,7 @@ var script$1 = {
     mode: {
       "default": PAGINATION_MODES.Records
     },
-    jumpFirstOrLast: {
-      "default": false
-    },
     // text options
-    firstText: {
-      "default": "First"
-    },
-    lastText: {
-      "default": "Last"
-    },
     nextText: {
       "default": 'Next'
     },
@@ -2429,22 +2402,9 @@ var script$1 = {
   computed: {
     // Number of pages
     pagesCount: function pagesCount() {
-      // if the setting is set to 'all'
-      if (this.currentPerPage === -1) {
-        return 1;
-      }
-
       var quotient = Math.floor(this.total / this.currentPerPage);
       var remainder = this.total % this.currentPerPage;
       return remainder === 0 ? quotient : quotient + 1;
-    },
-    // Can go to first page
-    firstIsPossible: function firstIsPossible() {
-      return this.currentPage > 1;
-    },
-    // Can go to last page
-    lastIsPossible: function lastIsPossible() {
-      return this.currentPage < Math.ceil(this.total / this.currentPerPage);
     },
     // Can go to next page
     nextIsPossible: function nextIsPossible() {
@@ -2467,22 +2427,6 @@ var script$1 = {
         this.prevPage = this.currentPage;
         this.currentPage = pageNumber;
         this.pageChanged(emit);
-      }
-    },
-    // Go to first page
-    firstPage: function firstPage() {
-      if (this.firstIsPossible) {
-        this.currentPage = 1;
-        this.prevPage = 0;
-        this.pageChanged();
-      }
-    },
-    // Go to last page
-    lastPage: function lastPage() {
-      if (this.lastIsPossible) {
-        this.currentPage = this.pagesCount;
-        this.prev = this.currentPage - 1;
-        this.pageChanged();
       }
     },
     // Go to next page
@@ -2613,7 +2557,7 @@ var __vue_render__$1 = function __vue_render__() {
     }, [_vm._v("\n          " + _vm._s(option) + "\n        ")]);
   }), _vm._v(" "), _vm.paginateDropdownAllowAll ? _c('option', {
     domProps: {
-      "value": -1
+      "value": _vm.total
     }
   }, [_vm._v(_vm._s(_vm.allText))]) : _vm._e()], 2)])]) : _vm._e(), _vm._v(" "), _c('div', {
     staticClass: "footer__navigation vgt-pull-right"
@@ -2631,32 +2575,7 @@ var __vue_render__$1 = function __vue_render__() {
     on: {
       "page-changed": _vm.changePage
     }
-  }), _vm._v(" "), _vm.jumpFirstOrLast ? _c('button', {
-    staticClass: "footer__navigation__page-btn",
-    "class": {
-      disabled: !_vm.firstIsPossible
-    },
-    attrs: {
-      "type": "button",
-      "aria-controls": "vgt-table"
-    },
-    on: {
-      "click": function click($event) {
-        $event.preventDefault();
-        $event.stopPropagation();
-        return _vm.firstPage($event);
-      }
-    }
-  }, [_c('span', {
-    staticClass: "chevron",
-    "class": {
-      left: !_vm.rtl,
-      right: _vm.rtl
-    },
-    attrs: {
-      "aria-hidden": "true"
-    }
-  }), _vm._v(" "), _c('span', [_vm._v(_vm._s(_vm.firstText))])]) : _vm._e(), _vm._v(" "), _c('button', {
+  }), _vm._v(" "), _c('button', {
     staticClass: "footer__navigation__page-btn",
     "class": {
       disabled: !_vm.prevIsPossible
@@ -2669,7 +2588,7 @@ var __vue_render__$1 = function __vue_render__() {
       "click": function click($event) {
         $event.preventDefault();
         $event.stopPropagation();
-        return _vm.previousPage($event);
+        return _vm.previousPage.apply(null, arguments);
       }
     }
   }, [_c('span', {
@@ -2694,7 +2613,7 @@ var __vue_render__$1 = function __vue_render__() {
       "click": function click($event) {
         $event.preventDefault();
         $event.stopPropagation();
-        return _vm.nextPage($event);
+        return _vm.nextPage.apply(null, arguments);
       }
     }
   }, [_c('span', [_vm._v(_vm._s(_vm.nextText))]), _vm._v(" "), _c('span', {
@@ -2706,32 +2625,7 @@ var __vue_render__$1 = function __vue_render__() {
     attrs: {
       "aria-hidden": "true"
     }
-  })]), _vm._v(" "), _vm.jumpFirstOrLast ? _c('button', {
-    staticClass: "footer__navigation__page-btn",
-    "class": {
-      disabled: !_vm.lastIsPossible
-    },
-    attrs: {
-      "type": "button",
-      "aria-controls": "vgt-table"
-    },
-    on: {
-      "click": function click($event) {
-        $event.preventDefault();
-        $event.stopPropagation();
-        return _vm.lastPage($event);
-      }
-    }
-  }, [_c('span', [_vm._v(_vm._s(_vm.lastText))]), _vm._v(" "), _c('span', {
-    staticClass: "chevron",
-    "class": {
-      right: !_vm.rtl,
-      left: _vm.rtl
-    },
-    attrs: {
-      "aria-hidden": "true"
-    }
-  })]) : _vm._e()], 1)]);
+  })])], 1)]);
 };
 
 var __vue_staticRenderFns__$1 = [];
@@ -2973,8 +2867,11 @@ var __vue_component__$2 = /*#__PURE__*/normalizeComponent({
 //
 //
 //
+//
+//
 var script$3 = {
   name: 'VgtFilterRow',
+  emits: ['filter-changed'],
   props: ['lineNumbers', 'columns', 'typedColumns', 'globalSearchEnabled', 'selectable', 'mode'],
   watch: {
     columns: {
@@ -3078,7 +2975,8 @@ var script$3 = {
       }, 400);
     },
     updateFiltersImmediately: function updateFiltersImmediately(field, value) {
-      this.$set(this.columnFilters, this.fieldKey(field), value);
+      var key = this.fieldKey(field);
+      this.columnFilters[key] = value;
       this.$emit('filter-changed', this.columnFilters);
     },
     populateInitialFilters: function populateInitialFilters() {
@@ -3087,8 +2985,8 @@ var script$3 = {
         // filters supplied by user
 
         if (this.isFilterable(col) && typeof col.filterOptions.filterValue !== 'undefined' && col.filterOptions.filterValue !== null) {
-          this.$set(this.columnFilters, this.fieldKey(col.field), col.filterOptions.filterValue); // this.updateFilters(col, col.filterOptions.filterValue);
-          // this.$set(col.filterOptions, 'filterValue', undefined);
+          var key = this.fieldKey(col.field);
+          this.columnFilters[key] = col.filterOptions.filterValue; // this.updateFilters(col, col.filterOptions.filterValue);
         }
       } //* lets emit event once all filters are set
 
@@ -3110,85 +3008,87 @@ var __vue_render__$3 = function __vue_render__() {
   var _c = _vm._self._c || _h;
 
   return _vm.hasFilterRow ? _c('tr', [_vm.lineNumbers ? _c('th') : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th') : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, index) {
-    return !column.hidden ? _c('th', {
+    return [!column.hidden ? _c('th', {
       key: index,
       "class": _vm.getClasses(column)
-    }, [_vm._t("column-filter", [_vm.isFilterable(column) ? _c('div', [!_vm.isDropdown(column) ? _c('input', {
-      staticClass: "vgt-input",
-      attrs: {
-        "name": _vm.getName(column),
-        "type": "text",
-        "placeholder": _vm.getPlaceholder(column)
-      },
-      domProps: {
-        "value": _vm.columnFilters[_vm.fieldKey(column.field)]
-      },
-      on: {
-        "keyup": function keyup($event) {
-          if (!$event.type.indexOf('key') && _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")) {
-            return null;
-          }
-
-          return _vm.updateFiltersOnEnter(column, $event.target.value);
+    }, [_vm._t("column-filter", function () {
+      return [_vm.isFilterable(column) ? _c('div', [!_vm.isDropdown(column) ? _c('input', {
+        staticClass: "vgt-input",
+        attrs: {
+          "name": _vm.getName(column),
+          "type": "text",
+          "placeholder": _vm.getPlaceholder(column)
         },
-        "input": function input($event) {
-          return _vm.updateFiltersOnKeyup(column, $event.target.value);
-        }
-      }
-    }) : _vm._e(), _vm._v(" "), _vm.isDropdownArray(column) ? _c('select', {
-      staticClass: "vgt-select",
-      attrs: {
-        "name": _vm.getName(column)
-      },
-      domProps: {
-        "value": _vm.columnFilters[_vm.fieldKey(column.field)]
-      },
-      on: {
-        "change": function change($event) {
-          return _vm.updateFiltersImmediately(column.field, $event.target.value);
-        }
-      }
-    }, [_c('option', {
-      key: "-1",
-      attrs: {
-        "value": ""
-      }
-    }, [_vm._v(_vm._s(_vm.getPlaceholder(column)))]), _vm._v(" "), _vm._l(column.filterOptions.filterDropdownItems, function (option, i) {
-      return _c('option', {
-        key: i,
         domProps: {
-          "value": option
+          "value": _vm.columnFilters[_vm.fieldKey(column.field)]
+        },
+        on: {
+          "keyup": function keyup($event) {
+            if (!$event.type.indexOf('key') && _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")) {
+              return null;
+            }
+
+            return _vm.updateFiltersOnEnter(column, $event.target.value);
+          },
+          "input": function input($event) {
+            return _vm.updateFiltersOnKeyup(column, $event.target.value);
+          }
         }
-      }, [_vm._v("\n              " + _vm._s(option) + "\n            ")]);
-    })], 2) : _vm._e(), _vm._v(" "), _vm.isDropdownObjects(column) ? _c('select', {
-      staticClass: "vgt-select",
-      attrs: {
-        "name": _vm.getName(column)
-      },
-      domProps: {
-        "value": _vm.columnFilters[_vm.fieldKey(column.field)]
-      },
-      on: {
-        "change": function change($event) {
-          return _vm.updateFiltersImmediately(column.field, $event.target.value);
-        }
-      }
-    }, [_c('option', {
-      key: "-1",
-      attrs: {
-        "value": ""
-      }
-    }, [_vm._v(_vm._s(_vm.getPlaceholder(column)))]), _vm._v(" "), _vm._l(column.filterOptions.filterDropdownItems, function (option, i) {
-      return _c('option', {
-        key: i,
+      }) : _vm._e(), _vm._v(" "), _vm.isDropdownArray(column) ? _c('select', {
+        staticClass: "vgt-select",
+        attrs: {
+          "name": _vm.getName(column)
+        },
         domProps: {
-          "value": option.value
+          "value": _vm.columnFilters[_vm.fieldKey(column.field)]
+        },
+        on: {
+          "change": function change($event) {
+            return _vm.updateFiltersImmediately(column.field, $event.target.value);
+          }
         }
-      }, [_vm._v(_vm._s(option.text))]);
-    })], 2) : _vm._e()]) : _vm._e()], {
+      }, [_c('option', {
+        key: "-1",
+        attrs: {
+          "value": ""
+        }
+      }, [_vm._v(_vm._s(_vm.getPlaceholder(column)))]), _vm._v(" "), _vm._l(column.filterOptions.filterDropdownItems, function (option, i) {
+        return _c('option', {
+          key: i,
+          domProps: {
+            "value": option
+          }
+        }, [_vm._v("\n              " + _vm._s(option) + "\n            ")]);
+      })], 2) : _vm._e(), _vm._v(" "), _vm.isDropdownObjects(column) ? _c('select', {
+        staticClass: "vgt-select",
+        attrs: {
+          "name": _vm.getName(column)
+        },
+        domProps: {
+          "value": _vm.columnFilters[_vm.fieldKey(column.field)]
+        },
+        on: {
+          "change": function change($event) {
+            return _vm.updateFiltersImmediately(column.field, $event.target.value);
+          }
+        }
+      }, [_c('option', {
+        key: "-1",
+        attrs: {
+          "value": ""
+        }
+      }, [_vm._v(_vm._s(_vm.getPlaceholder(column)))]), _vm._v(" "), _vm._l(column.filterOptions.filterDropdownItems, function (option, i) {
+        return _c('option', {
+          key: i,
+          domProps: {
+            "value": option.value
+          }
+        }, [_vm._v(_vm._s(option.text) + "\n            ")]);
+      })], 2) : _vm._e()]) : _vm._e()];
+    }, {
       "column": column,
       "updateFilters": _vm.updateSlotFilter
-    })], 2) : _vm._e();
+    })], 2) : _vm._e()];
   })], 2) : _vm._e();
 };
 
@@ -3198,7 +3098,7 @@ var __vue_staticRenderFns__$3 = [];
 var __vue_inject_styles__$3 = undefined;
 /* scoped */
 
-var __vue_scope_id__$3 = "data-v-6869bf1c";
+var __vue_scope_id__$3 = "data-v-859cdbb6";
 /* module identifier */
 
 var __vue_module_identifier__$3 = undefined;
@@ -3453,6 +3353,11 @@ var script$4 = {
       }
 
       return styleObject;
+    },
+    beforeUnmount: function beforeUnmount() {
+      if (this.ro) {
+        this.ro.disconnect();
+      }
     }
   },
   mounted: function mounted() {
@@ -3478,10 +3383,11 @@ var script$4 = {
       }
     });
   },
+  beforeUnmount: function beforeUnmount() {
+    this.beforeUnmount();
+  },
   beforeDestroy: function beforeDestroy() {
-    if (this.ro) {
-      this.ro.disconnect();
-    }
+    this.beforeUnmount();
   },
   components: {
     'vgt-filter-row': __vue_component__$3
@@ -3521,7 +3427,7 @@ var __vue_render__$4 = function __vue_render__() {
       "change": _vm.toggleSelectAll
     }
   })]) : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, index) {
-    return !column.hidden ? _c('th', {
+    return [!column.hidden ? _c('th', {
       key: index,
       "class": _vm.getHeaderClasses(column, index),
       style: _vm.columnStyles[index],
@@ -3531,7 +3437,9 @@ var __vue_render__$4 = function __vue_render__() {
         "aria-sort": _vm.getColumnSortLong(column),
         "aria-controls": "col-" + index
       }
-    }, [_vm._t("table-column", [_vm._v("\n        " + _vm._s(column.label) + "\n      ")], {
+    }, [_vm._t("table-column", function () {
+      return [_vm._v("\n        " + _vm._s(column.label) + "\n      ")];
+    }, {
       "column": column
     }), _vm._v(" "), _vm.isSortableColumn(column) ? _c('button', {
       on: {
@@ -3541,10 +3449,9 @@ var __vue_render__$4 = function __vue_render__() {
       }
     }, [_c('span', {
       staticClass: "sr-only"
-    }, [_vm._v("\n          Sort table by " + _vm._s(column.label) + " in " + _vm._s(_vm.getColumnSortLong(column)) + " order\n          ")])]) : _vm._e()], 2) : _vm._e();
-  })], 2), _vm._v(" "), _c("vgt-filter-row", {
+    }, [_vm._v("\n          Sort table by " + _vm._s(column.label) + " in " + _vm._s(_vm.getColumnSortLong(column)) + " order\n        ")])]) : _vm._e()], 2) : _vm._e()];
+  })], 2), _vm._v(" "), _c('vgt-filter-row', {
     ref: "filter-row",
-    tag: "tr",
     attrs: {
       "global-search-enabled": _vm.searchEnabled,
       "line-numbers": _vm.lineNumbers,
@@ -3666,8 +3573,12 @@ var __vue_component__$4 = /*#__PURE__*/normalizeComponent({
 //
 //
 //
+//
+//
+//
 var script$5 = {
   name: 'VgtHeaderRow',
+  emits: ['on-select-group-change', 'vgtExpand'],
   props: {
     headerRow: {
       type: Object
@@ -3751,19 +3662,21 @@ var __vue_render__$5 = function __vue_render__() {
     attrs: {
       "colspan": _vm.fullColspan
     }
-  }, [_vm.selectAllByGroup ? [_vm._t("table-header-group-select", [_c('input', {
-    attrs: {
-      "type": "checkbox"
-    },
-    domProps: {
-      "checked": _vm.allSelected
-    },
-    on: {
-      "change": function change($event) {
-        return _vm.toggleSelectGroup($event);
+  }, [_vm.selectAllByGroup ? [_vm._t("table-header-group-select", function () {
+    return [_c('input', {
+      attrs: {
+        "type": "checkbox"
+      },
+      domProps: {
+        "checked": _vm.allSelected
+      },
+      on: {
+        "change": function change($event) {
+          return _vm.toggleSelectGroup($event);
+        }
       }
-    }
-  })], {
+    })];
+  }, {
     "columns": _vm.columns,
     "row": _vm.headerRow
   })] : _vm._e(), _vm._v(" "), _c('span', {
@@ -3777,33 +3690,37 @@ var __vue_render__$5 = function __vue_render__() {
     "class": {
       'expand': _vm.headerRow.vgtIsExpanded
     }
-  }) : _vm._e(), _vm._v(" "), _vm._t("table-header-row", [_vm.headerRow.html ? _c('span', {
-    domProps: {
-      "innerHTML": _vm._s(_vm.headerRow.label)
-    }
-  }) : _c('span', [_vm._v("\n          " + _vm._s(_vm.headerRow.label) + "\n        ")])], {
+  }) : _vm._e(), _vm._v(" "), _vm._t("table-header-row", function () {
+    return [_vm.headerRow.html ? _c('span', {
+      domProps: {
+        "innerHTML": _vm._s(_vm.headerRow.label)
+      }
+    }) : _c('span', [_vm._v("\n          " + _vm._s(_vm.headerRow.label) + "\n        ")])];
+  }, {
     "row": _vm.headerRow
   })], 2)], 2) : _vm._e(), _vm._v(" "), _vm.headerRow.mode !== 'span' && _vm.lineNumbers ? _c('th', {
     staticClass: "vgt-row-header"
   }) : _vm._e(), _vm._v(" "), _vm.headerRow.mode !== 'span' && _vm.selectable ? _c('th', {
     staticClass: "vgt-row-header"
-  }, [_vm.selectAllByGroup ? [_vm._t("table-header-group-select", [_c('input', {
-    attrs: {
-      "type": "checkbox"
-    },
-    domProps: {
-      "checked": _vm.allSelected
-    },
-    on: {
-      "change": function change($event) {
-        return _vm.toggleSelectGroup($event);
+  }, [_vm.selectAllByGroup ? [_vm._t("table-header-group-select", function () {
+    return [_c('input', {
+      attrs: {
+        "type": "checkbox"
+      },
+      domProps: {
+        "checked": _vm.allSelected
+      },
+      on: {
+        "change": function change($event) {
+          return _vm.toggleSelectGroup($event);
+        }
       }
-    }
-  })], {
+    })];
+  }, {
     "columns": _vm.columns,
     "row": _vm.headerRow
-  })] : _vm._e()], 2) : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, i) {
-    return _vm.headerRow.mode !== 'span' && !column.hidden ? _c('th', {
+  })] : _vm._e()], 2) : _vm._e(), _vm._v(" "), _vm.headerRow.mode !== 'span' ? [_vm._l(_vm.columns, function (column, i) {
+    return [!column.hidden ? _c('th', {
       key: i,
       staticClass: "vgt-row-header",
       "class": _vm.getClasses(i, 'td'),
@@ -3817,16 +3734,18 @@ var __vue_render__$5 = function __vue_render__() {
       "class": {
         'expand': _vm.headerRow.vgtIsExpanded
       }
-    }) : _vm._e(), _vm._v(" "), _vm._t("table-header-row", [!column.html ? _c('span', [_vm._v("\n        " + _vm._s(_vm.collectFormatted(_vm.headerRow, column, true)) + "\n      ")]) : _vm._e(), _vm._v(" "), column.html ? _c('span', {
-      domProps: {
-        "innerHTML": _vm._s(_vm.collectFormatted(_vm.headerRow, column, true))
-      }
-    }) : _vm._e()], {
+    }) : _vm._e(), _vm._v(" "), _vm._t("table-header-row", function () {
+      return [!column.html ? _c('span', [_vm._v("\n            " + _vm._s(_vm.collectFormatted(_vm.headerRow, column, true)) + "\n          ")]) : _vm._e(), _vm._v(" "), column.html ? _c('span', {
+        domProps: {
+          "innerHTML": _vm._s(_vm.collectFormatted(_vm.headerRow, column, true))
+        }
+      }) : _vm._e()];
+    }, {
       "row": _vm.headerRow,
       "column": column,
       "formattedRow": _vm.formattedRow(_vm.headerRow, true)
-    })], 2) : _vm._e();
-  })], 2);
+    })], 2) : _vm._e()];
+  })] : _vm._e()], 2);
 };
 
 var __vue_staticRenderFns__$5 = [];
@@ -8548,6 +8467,7 @@ Object.keys(coreDataTypes).forEach(function (key) {
 });
 var script$6 = {
   name: 'vue-good-table',
+  emits: ['on-cell-click', 'on-column-filter', 'on-page-change', 'on-per-page-change', 'on-row-aux-click', 'on-row-click', 'on-row-dblclick', 'on-row-mouseenter', 'on-row-mouseleave', 'on-search', 'on-select-all', 'on-selected-rows-change', 'on-sort-change', 'update:isLoading'],
   props: {
     isLoading: {
       "default": null,
@@ -8617,15 +8537,17 @@ var script$6 = {
     // pagination
     paginationOptions: {
       "default": function _default() {
-        var _ref;
-
-        return _ref = {
+        return {
           enabled: false,
           position: 'bottom',
           perPage: 10,
           perPageDropdown: null,
-          perPageDropdownEnabled: true
-        }, _defineProperty(_ref, "position", 'bottom'), _defineProperty(_ref, "dropdownAllowAll", true), _defineProperty(_ref, "mode", 'records'), _defineProperty(_ref, "infoFn", null), _defineProperty(_ref, "jumpFirstOrLast", false), _ref;
+          perPageDropdownEnabled: true,
+          dropdownAllowAll: true,
+          mode: 'records',
+          // or pages
+          infoFn: null
+        };
       }
     },
     searchOptions: {
@@ -8645,8 +8567,6 @@ var script$6 = {
       // loading state for remote mode
       tableLoading: false,
       // text options
-      firstText: "First",
-      lastText: "Last",
       nextText: 'Next',
       prevText: 'Previous',
       rowsPerPageText: 'Rows per page',
@@ -8661,6 +8581,7 @@ var script$6 = {
       selectionInfoClass: '',
       selectionText: 'rows selected',
       clearSelectionText: 'clear',
+      selectAllByGroup: false,
       // keys for rows that are currently expanded
       maintainExpanded: true,
       expandedRowKeys: new Set(),
@@ -8753,6 +8674,9 @@ var script$6 = {
     tableStyles: function tableStyles() {
       if (this.compactMode) return this.tableStyleClasses + 'vgt-compact';else return this.tableStyleClasses;
     },
+    hasTableActionsSlot: function hasTableActionsSlot() {
+      return !!this.$slots['table-actions'];
+    },
     hasFooterSlot: function hasFooterSlot() {
       return !!this.$slots['table-actions-bottom'];
     },
@@ -8766,7 +8690,7 @@ var script$6 = {
       return this.groupOptions.rowKey || 'vgt_header_id';
     },
     hasHeaderRowTemplate: function hasHeaderRowTemplate() {
-      return !!this.$slots['table-header-row'] || !!this.$scopedSlots['table-header-row'];
+      return !!this.$slots['table-header-row'];
     },
     hasCheckboxColumnTemplate: function hasCheckboxColumnTemplate() {
       return !!this.$slots['table-checkbox-column'] || !!this.$scopedSlots['table-checkbox-column'];
@@ -9085,7 +9009,7 @@ var script$6 = {
       return reconstructedRows;
     },
     originalRows: function originalRows() {
-      var rows = this.rows && this.rows.length ? JSON.parse(JSON.stringify(this.rows)) : [];
+      var rows = JSON.parse(JSON.stringify(this.rows));
       var nestedRows = [];
 
       if (!this.groupOptions.enabled) {
@@ -9103,6 +9027,8 @@ var script$6 = {
       nestedRows.forEach(function (headerRow) {
         headerRow.children.forEach(function (row) {
           row.originalIndex = index++;
+          row.vgtSelected = false;
+          row.vgtIsExpanded = false;
         });
       });
       return nestedRows;
@@ -9126,9 +9052,9 @@ var script$6 = {
     //* to maintain it when sorting/filtering
     handleExpanded: function handleExpanded(headerRow) {
       if (this.maintainExpanded && this.expandedRowKeys.has(headerRow[this.rowKeyField])) {
-        this.$set(headerRow, 'vgtIsExpanded', true);
+        headerRow.vgtIsExpanded = true;
       } else {
-        this.$set(headerRow, 'vgtIsExpanded', false);
+        headerRow.vgtIsExpanded = false;
       }
     },
     toggleExpand: function toggleExpand(id) {
@@ -9139,7 +9065,7 @@ var script$6 = {
       });
 
       if (headerRow) {
-        this.$set(headerRow, 'vgtIsExpanded', !headerRow.vgtIsExpanded);
+        headerRow.vgtIsExpanded = !headerRow.vgtIsExpanded;
       }
 
       if (this.maintainExpanded && headerRow.vgtIsExpanded) {
@@ -9152,7 +9078,7 @@ var script$6 = {
       var _this4 = this;
 
       this.filteredRows.forEach(function (row) {
-        _this4.$set(row, 'vgtIsExpanded', true);
+        row.vgtIsExpanded = true;
 
         if (_this4.maintainExpanded) {
           _this4.expandedRowKeys.add(row[_this4.rowKeyField]);
@@ -9163,7 +9089,7 @@ var script$6 = {
       var _this5 = this;
 
       this.filteredRows.forEach(function (row) {
-        _this5.$set(row, 'vgtIsExpanded', false);
+        row.vgtIsExpanded = false;
 
         _this5.expandedRowKeys.clear();
       });
@@ -9198,19 +9124,15 @@ var script$6 = {
       });
     },
     unselectAllInternal: function unselectAllInternal(forceAll) {
-      var _this6 = this;
-
       var rows = this.selectAllByPage && !forceAll ? this.paginated : this.filteredRows;
       rows.forEach(function (headerRow, i) {
         headerRow.children.forEach(function (row, j) {
-          _this6.$set(row, 'vgtSelected', false);
+          row.vgtSelected = false;
         });
       });
       this.emitSelectedRows();
     },
     toggleSelectAll: function toggleSelectAll() {
-      var _this7 = this;
-
       if (this.allSelected) {
         this.unselectAllInternal();
         return;
@@ -9219,16 +9141,14 @@ var script$6 = {
       var rows = this.selectAllByPage ? this.paginated : this.filteredRows;
       rows.forEach(function (headerRow) {
         headerRow.children.forEach(function (row) {
-          _this7.$set(row, 'vgtSelected', true);
+          row.vgtSelected = true;
         });
       });
       this.emitSelectedRows();
     },
     toggleSelectGroup: function toggleSelectGroup(event, headerRow) {
-      var _this8 = this;
-
       headerRow.children.forEach(function (row) {
-        _this8.$set(row, 'vgtSelected', event.checked);
+        row.vgtSelected = event.checked;
       });
     },
     changePage: function changePage(value) {
@@ -9309,7 +9229,7 @@ var script$6 = {
     },
     // checkbox click should always do the following
     onCheckboxClicked: function onCheckboxClicked(row, index, event) {
-      this.$set(row, 'vgtSelected', !row.vgtSelected);
+      row.vgtSelected = !row.vgtSelected;
       this.$emit('on-row-click', {
         row: row,
         pageIndex: index,
@@ -9327,7 +9247,7 @@ var script$6 = {
     },
     onRowClicked: function onRowClicked(row, index, event) {
       if (this.selectable && !this.selectOnCheckboxOnly) {
-        this.$set(row, 'vgtSelected', !row.vgtSelected);
+        row.vgtSelected = !row.vgtSelected;
       }
 
       this.$emit('on-row-click', {
@@ -9479,15 +9399,14 @@ var script$6 = {
     },
     // method to filter rows
     filterRows: function filterRows(columnFilters) {
-      var _this9 = this;
+      var _this6 = this;
 
       var fromFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       // if (!this.rows.length) return;
       // this is invoked either as a result of changing filters
       // or as a result of modifying rows.
       this.columnFilters = columnFilters;
-      var computedRows = JSON.parse(JSON.stringify(this.originalRows));
-      var instancesOfFiltering = false; // do we have a filter to care about?
+      var computedRows = JSON.parse(JSON.stringify(this.originalRows)); // do we have a filter to care about?
       // if not we don't need to do anything
 
       if (this.columnFilters && Object.keys(this.columnFilters).length) {
@@ -9496,26 +9415,26 @@ var script$6 = {
           // to 1
           // if the mode is remote, we only need to reset, if this is
           // being called from filter, not when rows are changing
-          if (_this9.mode !== 'remote' || fromFilter) {
-            _this9.changePage(1);
+          if (_this6.mode !== 'remote' || fromFilter) {
+            _this6.changePage(1);
           } // we need to emit an event and that's that.
           // but this only needs to be invoked if filter is changing
           // not when row object is modified.
 
 
           if (fromFilter) {
-            _this9.$emit('on-column-filter', {
-              columnFilters: _this9.columnFilters
+            _this6.$emit('on-column-filter', {
+              columnFilters: _this6.columnFilters
             });
           } // if mode is remote, we don't do any filtering here.
 
 
-          if (_this9.mode === 'remote') {
+          if (_this6.mode === 'remote') {
             if (fromFilter) {
-              _this9.$emit('update:isLoading', true);
+              _this6.$emit('update:isLoading', true);
             } else {
               // if remote filtering has already been taken care of.
-              _this9.filteredRows = computedRows;
+              _this6.filteredRows = computedRows;
             }
 
             return {
@@ -9532,20 +9451,19 @@ var script$6 = {
           };
 
           var _loop = function _loop(i) {
-            var col = _this9.typedColumns[i];
+            var col = _this6.typedColumns[i];
 
-            if (_this9.columnFilters[fieldKey(col.field)]) {
-              instancesOfFiltering = true;
+            if (_this6.columnFilters[fieldKey(col.field)]) {
               computedRows.forEach(function (headerRow) {
                 var newChildren = headerRow.children.filter(function (row) {
                   // If column has a custom filter, use that.
                   if (col.filterOptions && typeof col.filterOptions.filterFn === 'function') {
-                    return col.filterOptions.filterFn(_this9.collect(row, col.field), _this9.columnFilters[fieldKey(col.field)]);
+                    return col.filterOptions.filterFn(_this6.collect(row, col.field), _this6.columnFilters[fieldKey(col.field)]);
                   } // Otherwise Use default filters
 
 
                   var typeDef = col.typeDef;
-                  return typeDef.filterPredicate(_this9.collect(row, col.field), _this9.columnFilters[fieldKey(col.field)], false, col.filterOptions && _typeof(col.filterOptions.filterDropdownItems) === 'object');
+                  return typeDef.filterPredicate(_this6.collect(row, col.field), _this6.columnFilters[fieldKey(col.field)], false, col.filterOptions && _typeof(col.filterOptions.filterDropdownItems) === 'object');
                 }); // should we remove the header?
 
                 headerRow.children = newChildren;
@@ -9553,7 +9471,7 @@ var script$6 = {
             }
           };
 
-          for (var i = 0; i < _this9.typedColumns.length; i++) {
+          for (var i = 0; i < _this6.typedColumns.length; i++) {
             _loop(i);
           }
         }();
@@ -9561,13 +9479,9 @@ var script$6 = {
         if (_typeof(_ret) === "object") return _ret.v;
       }
 
-      if (instancesOfFiltering) {
-        this.filteredRows = computedRows.filter(function (h) {
-          return h.children && h.children.length;
-        });
-      } else {
-        this.filteredRows = computedRows;
-      }
+      this.filteredRows = computedRows.filter(function (h) {
+        return h.children && h.children.length;
+      });
     },
     getCurrentIndex: function getCurrentIndex(rowId) {
       var index = 0;
@@ -9614,13 +9528,13 @@ var script$6 = {
       return classes;
     },
     handleGrouped: function handleGrouped(originalRows) {
-      var _this10 = this;
+      var _this7 = this;
 
       originalRows.forEach(function (headerRow, i) {
         headerRow.vgt_header_id = i;
 
-        if (_this10.groupOptions.maintainExpanded && _this10.expandedRowKeys.has(headerRow[_this10.groupOptions.rowKey])) {
-          _this10.$set(headerRow, 'vgtIsExpanded', true);
+        if (_this7.groupOptions.maintainExpanded && _this7.expandedRowKeys.has(headerRow[_this7.groupOptions.rowKey])) {
+          headerRow.vgtIsExpanded = true;
         }
 
         headerRow.children.forEach(function (childRow) {
@@ -9630,7 +9544,7 @@ var script$6 = {
       return originalRows;
     },
     initializePagination: function initializePagination() {
-      var _this11 = this;
+      var _this8 = this;
 
       var _this$paginationOptio = this.paginationOptions,
           enabled = _this$paginationOptio.enabled,
@@ -9639,8 +9553,6 @@ var script$6 = {
           perPageDropdown = _this$paginationOptio.perPageDropdown,
           perPageDropdownEnabled = _this$paginationOptio.perPageDropdownEnabled,
           dropdownAllowAll = _this$paginationOptio.dropdownAllowAll,
-          firstLabel = _this$paginationOptio.firstLabel,
-          lastLabel = _this$paginationOptio.lastLabel,
           nextLabel = _this$paginationOptio.nextLabel,
           prevLabel = _this$paginationOptio.prevLabel,
           rowsPerPageLabel = _this$paginationOptio.rowsPerPageLabel,
@@ -9690,14 +9602,6 @@ var script$6 = {
         this.paginationMode = mode;
       }
 
-      if (typeof firstLabel === 'string') {
-        this.firstText = firstLabel;
-      }
-
-      if (typeof lastLabel === 'string') {
-        this.lastText = lastLabel;
-      }
-
       if (typeof nextLabel === 'string') {
         this.nextText = nextLabel;
       }
@@ -9724,7 +9628,7 @@ var script$6 = {
 
       if (typeof setCurrentPage === 'number') {
         setTimeout(function () {
-          _this11.changePage(setCurrentPage);
+          _this8.changePage(setCurrentPage);
         }, 500);
       }
 
@@ -9866,39 +9770,40 @@ var __vue_render__$6 = function __vue_render__() {
     "class": _vm.wrapStyleClasses
   }, [_vm.isLoading ? _c('div', {
     staticClass: "vgt-loading vgt-center-align"
-  }, [_vm._t("loadingContent", [_c('span', {
-    staticClass: "vgt-loading__content"
-  }, [_vm._v("\n        Loading...\n      ")])])], 2) : _vm._e(), _vm._v(" "), _c('div', {
+  }, [_vm._t("loadingContent", function () {
+    return [_c('span', {
+      staticClass: "vgt-loading__content"
+    }, [_vm._v("\n        Loading...\n      ")])];
+  })], 2) : _vm._e(), _vm._v(" "), _c('div', {
     staticClass: "vgt-inner-wrap",
     "class": {
       'is-loading': _vm.isLoading
     }
-  }, [_vm.paginate && _vm.paginateOnTop ? _vm._t("pagination-top", [_c('vgt-pagination', {
-    ref: "paginationTop",
-    attrs: {
-      "perPage": _vm.perPage,
-      "rtl": _vm.rtl,
-      "total": _vm.totalRows || _vm.totalRowCount,
-      "mode": _vm.paginationMode,
-      "jumpFirstOrLast": _vm.paginationOptions.jumpFirstOrLast,
-      "firstText": _vm.firstText,
-      "lastText": _vm.lastText,
-      "nextText": _vm.nextText,
-      "prevText": _vm.prevText,
-      "rowsPerPageText": _vm.rowsPerPageText,
-      "perPageDropdownEnabled": _vm.paginationOptions.perPageDropdownEnabled,
-      "customRowsPerPageDropdown": _vm.customRowsPerPageDropdown,
-      "paginateDropdownAllowAll": _vm.paginateDropdownAllowAll,
-      "ofText": _vm.ofText,
-      "pageText": _vm.pageText,
-      "allText": _vm.allText,
-      "info-fn": _vm.paginationInfoFn
-    },
-    on: {
-      "page-changed": _vm.pageChanged,
-      "per-page-changed": _vm.perPageChanged
-    }
-  })], {
+  }, [_vm.paginate && _vm.paginateOnTop ? _vm._t("pagination-top", function () {
+    return [_c('vgt-pagination', {
+      ref: "paginationTop",
+      attrs: {
+        "perPage": _vm.perPage,
+        "rtl": _vm.rtl,
+        "total": _vm.totalRows || _vm.totalRowCount,
+        "mode": _vm.paginationMode,
+        "nextText": _vm.nextText,
+        "prevText": _vm.prevText,
+        "rowsPerPageText": _vm.rowsPerPageText,
+        "perPageDropdownEnabled": _vm.paginationOptions.perPageDropdownEnabled,
+        "customRowsPerPageDropdown": _vm.customRowsPerPageDropdown,
+        "paginateDropdownAllowAll": _vm.paginateDropdownAllowAll,
+        "ofText": _vm.ofText,
+        "pageText": _vm.pageText,
+        "allText": _vm.allText,
+        "info-fn": _vm.paginationInfoFn
+      },
+      on: {
+        "page-changed": _vm.pageChanged,
+        "per-page-changed": _vm.perPageChanged
+      }
+    })];
+  }, {
     "pageChanged": _vm.pageChanged,
     "perPageChanged": _vm.perPageChanged,
     "total": _vm.totalRows || _vm.totalRowCount
@@ -9911,6 +9816,13 @@ var __vue_render__$6 = function __vue_render__() {
       "on-keyup": _vm.searchTableOnKeyUp,
       "on-enter": _vm.searchTableOnEnter
     },
+    scopedSlots: _vm._u([_vm.hasTableActionsSlot ? {
+      key: "internal-table-actions",
+      fn: function fn() {
+        return [_vm._t("table-actions")];
+      },
+      proxy: true
+    } : null], null, true),
     model: {
       value: _vm.globalSearchTerm,
       callback: function callback($$v) {
@@ -9918,9 +9830,7 @@ var __vue_render__$6 = function __vue_render__() {
       },
       expression: "globalSearchTerm"
     }
-  }, [_c('template', {
-    slot: "internal-table-actions"
-  }, [_vm._t("table-actions")], 2)], 2), _vm._v(" "), _vm.selectedRowCount && !_vm.disableSelectInfo ? _c('div', {
+  }), _vm._v(" "), _vm.selectedRowCount && !_vm.disableSelectInfo ? _c('div', {
     staticClass: "vgt-selection-info-row clearfix",
     "class": _vm.selectionInfoClass
   }, [_vm._v("\n      " + _vm._s(_vm.selectionInfo) + "\n      "), _c('a', {
@@ -9949,9 +9859,8 @@ var __vue_render__$6 = function __vue_render__() {
         "id": "col-" + index
       }
     });
-  }), 0), _vm._v(" "), _c("vgt-table-header", {
+  }), 0), _vm._v(" "), _c('vgt-table-header', {
     ref: "table-header-secondary",
-    tag: "thead",
     attrs: {
       "columns": _vm.columns,
       "line-numbers": _vm.lineNumbers,
@@ -9975,7 +9884,9 @@ var __vue_render__$6 = function __vue_render__() {
     scopedSlots: _vm._u([{
       key: "table-column",
       fn: function fn(props) {
-        return [_vm._t("table-column", [_c('span', [_vm._v(_vm._s(props.column.label))])], {
+        return [_vm._t("table-column", function () {
+          return [_c('span', [_vm._v(_vm._s(props.column.label))])];
+        }, {
           "column": props.column
         })];
       }
@@ -10006,9 +9917,8 @@ var __vue_render__$6 = function __vue_render__() {
         "id": "col-" + index
       }
     });
-  }), 0), _vm._v(" "), _c("vgt-table-header", {
+  }), 0), _vm._v(" "), _c('vgt-table-header', {
     ref: "table-header-primary",
-    tag: "thead",
     attrs: {
       "columns": _vm.columns,
       "line-numbers": _vm.lineNumbers,
@@ -10030,7 +9940,9 @@ var __vue_render__$6 = function __vue_render__() {
     scopedSlots: _vm._u([{
       key: "table-column",
       fn: function fn(props) {
-        return [_vm._t("table-column", [_c('span', [_vm._v(_vm._s(props.column.label))])], {
+        return [_vm._t("table-column", function () {
+          return [_c('span', [_vm._v(_vm._s(props.column.label))])];
+        }, {
           "column": props.column
         })];
       }
@@ -10069,18 +9981,18 @@ var __vue_render__$6 = function __vue_render__() {
           return _vm.toggleSelectGroup($event, headerRow);
         }
       },
-      scopedSlots: _vm._u([{
+      scopedSlots: _vm._u([_vm.hasHeaderRowTemplate ? {
         key: "table-header-row",
         fn: function fn(props) {
-          return _vm.hasHeaderRowTemplate ? [_vm._t("table-header-row", null, {
+          return [_vm._t("table-header-row", null, {
             "column": props.column,
             "formattedRow": props.formattedRow,
             "row": props.row
-          })] : undefined;
+          })];
         }
-      }], null, true)
-    }) : _vm._e(), _vm._v(" "), _vm._l(headerRow.children, function (row, index) {
-      return (_vm.groupOptions.collapsable ? headerRow.vgtIsExpanded : true) ? _c('tr', {
+      } : null], null, true)
+    }) : _vm._e(), _vm._v(" "), (_vm.groupOptions.collapsable ? headerRow.vgtIsExpanded : true) ? _vm._l(headerRow.children, function (row, index) {
+      return _c('tr', {
         key: row.originalIndex,
         "class": _vm.getRowStyleClass(row),
         on: {
@@ -10121,7 +10033,7 @@ var __vue_render__$6 = function __vue_render__() {
           "checked": row.vgtSelected
         }
       })], 2) : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, i) {
-        return !column.hidden && column.field ? _c('td', {
+        return [!column.hidden && column.field ? _c('td', {
           key: i,
           "class": _vm.getClasses(i, 'td', row),
           attrs: {
@@ -10132,18 +10044,20 @@ var __vue_render__$6 = function __vue_render__() {
               return _vm.onCellClicked(row, column, index, $event);
             }
           }
-        }, [_vm._t("table-row", [!column.html ? _c('span', [_vm._v("\n                  " + _vm._s(_vm.collectFormatted(row, column)) + "\n                ")]) : _c('span', {
-          domProps: {
-            "innerHTML": _vm._s(_vm.collect(row, column.field))
-          }
-        })], {
+        }, [_vm._t("table-row", function () {
+          return [!column.html ? _c('span', [_vm._v("\n                    " + _vm._s(_vm.collectFormatted(row, column)) + "\n                  ")]) : _c('span', {
+            domProps: {
+              "innerHTML": _vm._s(_vm.collect(row, column.field))
+            }
+          })];
+        }, {
           "row": row,
           "column": column,
           "formattedRow": _vm.formattedRow(row),
           "index": index
-        })], 2) : _vm._e();
-      })], 2) : _vm._e();
-    }), _vm._v(" "), _vm.groupHeaderOnBottom ? _c('vgt-header-row', {
+        })], 2) : _vm._e()];
+      })], 2);
+    }) : _vm._e(), _vm._v(" "), _vm.groupHeaderOnBottom ? _c('vgt-header-row', {
       attrs: {
         "header-row": headerRow,
         "columns": _vm.columns,
@@ -10161,16 +10075,16 @@ var __vue_render__$6 = function __vue_render__() {
           return _vm.toggleSelectGroup($event, headerRow);
         }
       },
-      scopedSlots: _vm._u([{
+      scopedSlots: _vm._u([_vm.hasHeaderRowTemplate ? {
         key: "table-header-row",
         fn: function fn(props) {
-          return _vm.hasHeaderRowTemplate ? [_vm._t("table-header-row", null, {
+          return [_vm._t("table-header-row", null, {
             "column": props.column,
             "formattedRow": props.formattedRow,
             "row": props.row
-          })] : undefined;
+          })];
         }
-      }], null, true)
+      } : null], null, true)
     }) : _vm._e()], 2);
   }), _vm._v(" "), _vm.showEmptySlot ? _c('tbody', {
     staticClass: "vgt-empty-body"
@@ -10178,36 +10092,37 @@ var __vue_render__$6 = function __vue_render__() {
     attrs: {
       "colspan": _vm.fullColspan
     }
-  }, [_vm._t("emptystate", [_c('div', {
-    staticClass: "vgt-center-align vgt-text-disabled"
-  }, [_vm._v("\n                  No data for table\n                ")])])], 2)])]) : _vm._e()], 2)]), _vm._v(" "), _vm.hasFooterSlot ? _c('div', {
+  }, [_vm._t("emptystate", function () {
+    return [_c('div', {
+      staticClass: "vgt-center-align vgt-text-disabled"
+    }, [_vm._v("\n                No data for table\n              ")])];
+  })], 2)])]) : _vm._e()], 2)]), _vm._v(" "), _vm.hasFooterSlot ? _c('div', {
     staticClass: "vgt-wrap__actions-footer"
-  }, [_vm._t("table-actions-bottom")], 2) : _vm._e(), _vm._v(" "), _vm.paginate && _vm.paginateOnBottom ? _vm._t("pagination-bottom", [_c('vgt-pagination', {
-    ref: "paginationBottom",
-    attrs: {
-      "perPage": _vm.perPage,
-      "rtl": _vm.rtl,
-      "total": _vm.totalRows || _vm.totalRowCount,
-      "mode": _vm.paginationMode,
-      "jumpFirstOrLast": _vm.paginationOptions.jumpFirstOrLast,
-      "firstText": _vm.firstText,
-      "lastText": _vm.lastText,
-      "nextText": _vm.nextText,
-      "prevText": _vm.prevText,
-      "rowsPerPageText": _vm.rowsPerPageText,
-      "perPageDropdownEnabled": _vm.paginationOptions.perPageDropdownEnabled,
-      "customRowsPerPageDropdown": _vm.customRowsPerPageDropdown,
-      "paginateDropdownAllowAll": _vm.paginateDropdownAllowAll,
-      "ofText": _vm.ofText,
-      "pageText": _vm.pageText,
-      "allText": _vm.allText,
-      "info-fn": _vm.paginationInfoFn
-    },
-    on: {
-      "page-changed": _vm.pageChanged,
-      "per-page-changed": _vm.perPageChanged
-    }
-  })], {
+  }, [_vm._t("table-actions-bottom")], 2) : _vm._e(), _vm._v(" "), _vm.paginate && _vm.paginateOnBottom ? _vm._t("pagination-bottom", function () {
+    return [_c('vgt-pagination', {
+      ref: "paginationBottom",
+      attrs: {
+        "perPage": _vm.perPage,
+        "rtl": _vm.rtl,
+        "total": _vm.totalRows || _vm.totalRowCount,
+        "mode": _vm.paginationMode,
+        "nextText": _vm.nextText,
+        "prevText": _vm.prevText,
+        "rowsPerPageText": _vm.rowsPerPageText,
+        "perPageDropdownEnabled": _vm.paginationOptions.perPageDropdownEnabled,
+        "customRowsPerPageDropdown": _vm.customRowsPerPageDropdown,
+        "paginateDropdownAllowAll": _vm.paginateDropdownAllowAll,
+        "ofText": _vm.ofText,
+        "pageText": _vm.pageText,
+        "allText": _vm.allText,
+        "info-fn": _vm.paginationInfoFn
+      },
+      on: {
+        "page-changed": _vm.pageChanged,
+        "per-page-changed": _vm.perPageChanged
+      }
+    })];
+  }, {
     "pageChanged": _vm.pageChanged,
     "perPageChanged": _vm.perPageChanged,
     "total": _vm.totalRows || _vm.totalRowCount

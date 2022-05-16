@@ -1,7 +1,8 @@
 {
   "extends": [
     "airbnb",
-    "plugin:vue/base"
+    "plugin:vue/base",
+    "plugin:vue/vue3-essential"
   ],
   "rules": {
     "func-names": ["error", "never"],
