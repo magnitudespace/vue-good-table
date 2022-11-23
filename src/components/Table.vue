@@ -120,6 +120,10 @@
                   :updateFilters="props.updateFilters"
               ></slot>
             </template>
+            <template slot="checkbox-header-column"
+                      slot-scope="props">
+              <slot name="checkbox-header-column" v-bind="props"/>
+            </template>
           </thead>
         </table>
       </div>
@@ -174,6 +178,10 @@
                 :column="props.column"
                 :updateFilters="props.updateFilters"
               ></slot>
+            </template>
+            <template slot="checkbox-header-column"
+                      slot-scope="props">
+              <slot name="checkbox-header-column" v-bind="props"/>
             </template>
           </thead>
 
